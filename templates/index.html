@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>密碼安全分析與洩漏偵測</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div id="header">
+  <h2>密碼安全分析與洩漏偵測</h2>
+</div>
+
+<div id="main">
+
+  <h3>輸入密碼</h3>
+  <form method="post">
+    <input type="text" name="password" size="40"
+           placeholder="在這裡輸入密碼..."
+           value="{{ password }}"
+           autocomplete="off" autofocus>
+    <input type="submit" value="開始分析">
+  </form>
+
+  <p><small>範例：123456 ／ Hello123 ／ Hello@2026! ／ Tr0ub4dor&3</small></p>
+
+  <hr>
+
+  {% if result %}
+
+  <h3>分析結果</h3>
+
+  <table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+      <td><b>強度等級</b></td>
+      <td>
+        {% if result.level == '強' %}
+          <span style="color:green; font-weight:bold;">強</span>
+        {% elif result.level == '中' %}
+          <span style="color:orange; font-weight:bold;">⚠中</span>
+        {% else %}
+          <span style="color:red; font-weight:bold;">弱</span>
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td><b>強度分數</b></td>
+      <td>{{ result.score }} / 100</td>
+    </tr>
+    <tr>
+      <td><b>熵值</b></td>
+      <td>{{ result.entropy }} bits</td>
+    </tr>
+    <tr>
+      <td><b>預估破解時間</b></td>
+      <td>{{ result.crack_time }}</td>
+    </tr>
+    <tr>
+      <td><b>HaveIBeenPwned 查詢</b></td>
+      <td>
+        {% if result.pwned is none %}
+          <span style="color:gray;">查詢失敗（網路問題）</span>
+        {% elif result.pwned > 0 %}
+          <span style="color:red; font-weight:bold;">曾出現在 {{ "{:,}".format(result.pwned) }} 筆外洩紀錄中，請立即更換！</span>
+        {% else %}
+          <span style="color:green;">✓ 未在已知外洩資料庫中發現</span>
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <br>
+
+  <h3>分析說明</h3>
+  <ul>
+    {% for tip in result.tips %}
+    <li>{{ tip }}</li>
+    {% endfor %}
+  </ul>
+
+  <hr>
+
+  {% else %}
+
+  <p>請在上方輸入密碼後按「開始分析」。</p>
+
+  {% endif %}
+
+  <h3>技術說明</h3>
+  <b>密碼熵值</b><br>
+  熵值是用來表示密碼「有多難猜」的數字，單位是 bits。
+  密碼越長、用越多種字元，熵值就越高。
+  <br><br>
+  <b>破解時間</b><br>
+  假設駭客用電腦每秒猜 10 億次，根據熵值算出要猜多久才能猜中。
+  <br><br>
+  <b>HaveIBeenPwned 外洩查詢</b><br>
+  這是一個收集資料外洩紀錄的網站。查詢時不會直接傳密碼，
+  而是把密碼轉成雜湊後只傳前 5 碼，在本地比對，所以不會外洩密碼本身。
+
+</div>
+
+<br>
+<div id="footer">
+  <small>密碼安全分析與洩漏偵測  魏天勝 2026 v1</small>
+</div>
+
+</body>
+</html>
